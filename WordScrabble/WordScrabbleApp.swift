@@ -13,6 +13,7 @@ struct WordScrabbleApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             GameState.self,
+            Score.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

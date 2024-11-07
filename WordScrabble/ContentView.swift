@@ -14,8 +14,8 @@ struct ContentView: View {
     @StateObject var gameState = GameState(
             word: "Example",
             score: 100,
-            wordList: ["Swift", "Code", "Example"],
-            completedWords: ["Swift", "Code"],
+            wordList: ["Swift", "Code"],
+            completedWords: ["Swift"],
             date: Date()
         )
     

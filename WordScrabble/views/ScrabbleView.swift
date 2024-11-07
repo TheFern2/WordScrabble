@@ -6,9 +6,12 @@
 //
 
 import SwiftUI
+import SwiftData
 
 /*
-  - [ ] Break out things into separate views
+ - [ ] Extract error handling to a separate view
+ - [ ] Extract progress stuff to a separate view
+ - [x] maxScore should show max score from scoreboard scores
  */
 
 struct ScrabbleView: View {
@@ -18,6 +21,9 @@ struct ScrabbleView: View {
     @State private var newWord = ""
     @State private var hasGameStarted = false
     @State private var wordProgress: Double = 0.0 // TODO extract progress stuff to a separate view
+    @Query private var scores: [Score] // Fetch all Score instances from ScoreboardView
+    @State private var maxScore: Int = 0 // Track the max score for display
+    @Environment(\.modelContext) private var modelContext // Access model context
     
     // TODO extract error stuff to a separate view
     @State private var errorTitle = ""
@@ -34,9 +40,12 @@ struct ScrabbleView: View {
                             .font(.title2)
                             .padding(.top)
                         Spacer()
-                        Text("Max: 99")  // Replace with dynamic max score if available
+                        Text("Max: \(maxScore)")  // Replace with dynamic max score if available
                             .font(.title2)
                             .padding(.top)
+                    }
+                    .onChange(of: gameState.score) { _, newScore in
+                        checkAndUpdateCurrentWordScore(newScore: newScore)
                     }
                     
                     HStack {
@@ -93,6 +102,9 @@ struct ScrabbleView: View {
                 }
             }
         }
+        .onAppear {
+            calculateOverallMaxScore() // Calculate max score on view load// Initial calculation when the view appears
+        }
         .onSubmit(addNewWord)
         .alert(errorTitle, isPresented: $showingError) {
             Button("OK") { }
@@ -100,7 +112,46 @@ struct ScrabbleView: View {
             Text(errorMessage)
         }
     }
-
+    
+    private func calculateOverallMaxScore() {
+        // Calculate the overall max score from all Score entries
+        maxScore = scores.map { $0.score }.max() ?? 0
+    }
+    
+    private func checkAndUpdateCurrentWordScore(newScore: Int) {
+        guard newScore > 0 else { return } // Only proceed if the score is larger than 0
+        
+        // Find the score entry for the current word, if it exists
+        if let existingScore = scores.first(where: { $0.word == gameState.word }) {
+            // Update the existing score if the new score is higher than the saved score for this word
+            if newScore > existingScore.score {
+                existingScore.score = newScore
+                existingScore.wordCount = gameState.wordList.count
+                existingScore.date = Date()
+                
+                // Persist the updated score for the current word
+                try? modelContext.save()
+            }
+        } else {
+            // Insert a new score entry only if no entry exists and score is larger than 0
+            let newScoreEntry = Score(
+                word: gameState.word,
+                wordCount: gameState.wordList.count,
+                score: newScore,
+                date: Date()
+            )
+            modelContext.insert(newScoreEntry)
+            
+            // Persist the new score entry
+            try? modelContext.save()
+        }
+        
+        // Update overall maxScore in case the new score exceeds it
+        if newScore > maxScore {
+            maxScore = newScore
+        }
+    }
+    
     func addNewWord() {
         let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         
@@ -132,20 +183,20 @@ struct ScrabbleView: View {
         }
         
         withAnimation {
-//            usedWords.insert(answer, at: 0)
+            //            usedWords.insert(answer, at: 0)
             gameState.completedWords.insert(answer, at: 0)
         }
         gameState.score += answer.count
-//        enteredWordCount += 1
+        //        enteredWordCount += 1
         wordProgress = min(Double(gameState.completedWords.count) / Double(gameState.wordList.count), 1.0)
         newWord = ""
     }
-
+    
     func isOriginal(word: String) -> Bool {
-//        !usedWords.contains(word)
+        //        !usedWords.contains(word)
         !gameState.completedWords.contains(word)
     }
-
+    
     func isPossible(word: String) -> Bool {
         
         var rootCopy = gameState.word
@@ -160,7 +211,7 @@ struct ScrabbleView: View {
         
         return true
     }
-
+    
     func isReal(word: String) -> Bool {
         let checker = UITextChecker()
         let range = NSRange(location: 0, length: word.utf16.count) // UTF-16 length for compatibility
@@ -171,7 +222,7 @@ struct ScrabbleView: View {
         // If `misspelledRange.location` is NSNotFound, the word is correctly spelled
         return misspelledRange.location == NSNotFound
     }
-
+    
     func isLengthValid(word: String) -> Bool {
         guard word.count >= 3 else {
             return false
@@ -179,7 +230,7 @@ struct ScrabbleView: View {
         
         return true
     }
-
+    
     func wordError(title: String, message: String) {
         errorTitle = title
         errorMessage = message

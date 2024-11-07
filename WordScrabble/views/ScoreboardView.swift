@@ -12,18 +12,22 @@
  */
 
 import SwiftUI
+import SwiftData
 
 struct ScoreboardView: View {
-    @State private var scores: [Score] = [
-        Score(word: "Swift", wordCount: 5, score: 100, date: Date()),
-        Score(word: "UI", wordCount: 2, score: 200, date: Date().addingTimeInterval(-86400)),
-        Score(word: "Framework", wordCount: 9, score: 150, date: Date().addingTimeInterval(-172800))
-    ]
+   // @State private var scores: [Score] = [
+//        Score(word: "Swift", wordCount: 5, score: 100, date: Date()),
+//        Score(word: "UI", wordCount: 2, score: 200, date: Date().addingTimeInterval(-86400)),
+//        Score(word: "Framework", wordCount: 9, score: 150, date: Date().addingTimeInterval(-172800))
+  //  ]
+    
+    @Query private var scores: [Score] // Fetch all saved scores from SwiftData
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         NavigationView {
             List {
-                ForEach($scores, id: \.self) { $score in
+                ForEach(scores, id: \.self) { score in
                     VStack(alignment: .leading) {
                         HStack {
                             Text(score.word)
@@ -51,7 +55,17 @@ struct ScoreboardView: View {
     }
     
     private func deleteScore(at offsets: IndexSet) {
-        scores.remove(atOffsets: offsets)
+        for index in offsets {
+            let score = scores[index]
+            modelContext.delete(score) // Delete from SwiftData context
+        }
+        
+        // Save the context to persist the deletion
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error deleting score: \(error)")
+        }
     }
     
     private var dateFormatter: DateFormatter {
