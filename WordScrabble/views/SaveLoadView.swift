@@ -44,7 +44,8 @@ struct SaveLoadView: View {
                                 .font(.subheadline)
                             Button(action: {
                                 selectedGameState = savedState
-                                loadGame()
+//                                loadGame()
+                                showAlert = true
                             }) {
                                 Text("Load")
                                     .font(.subheadline)

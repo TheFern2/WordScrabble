@@ -20,11 +20,11 @@ struct HomeView: View {
             ScrabbleView(gameState: gameState)
                 .navigationTitle("Word Scrabble")
                 .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Save Game") {
-                            saveOrUpdateGameState()
-                        }
-                    }
+                    //                    ToolbarItem(placement: .navigationBarLeading) {
+                    //                        Button("Save Game") {
+                    //                            saveOrUpdateGameState()
+                    //                        }
+                    //                    }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button("New Game") {
                             gameState.startGame()
@@ -36,6 +36,9 @@ struct HomeView: View {
                         gameState.startGame()
                         gameState.hasGameStarted = true
                     }
+                }
+                .onChange(of: gameState.completedWords) { _ in
+                    saveOrUpdateGameState()
                 }
         }
     }
