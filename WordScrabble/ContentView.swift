@@ -31,7 +31,7 @@ struct ContentView: View {
                     Label("Scoreboard", systemImage: "list.number")
                 }
             
-            SaveLoadView()
+            SaveLoadView(gameState: gameState)
                 .tabItem {
                     Label("Save/Load", systemImage: "square.and.arrow.down")
                 }

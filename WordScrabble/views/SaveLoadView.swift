@@ -6,37 +6,45 @@
 //
 
 /*
-    This view will allow the user to save and load data.
-    Need a GameState class word, wordCount, score, wordList, completedWords.
-    The ui should have a list of saved game states that the user can select to load.
-    A row should display in one HStack word, completed words, score, and load button and swipe to delete. and date below word.
+ This view will allow the user to save and load data.
+ Need a GameState class word, wordCount, score, wordList, completedWords.
+ The ui should have a list of saved game states that the user can select to load.
+ A row should display in one HStack word, completed words, score, and load button and swipe to delete. and date below word.
  */
 
 import SwiftUI
+import SwiftData
 
 struct SaveLoadView: View {
-    @State private var gameStates: [GameState] = [
-        GameState(word: "Example", score: 120, wordList: ["Swift", "UI", "Framework"], completedWords: ["Swift", "UI"], date: Date()),
-        GameState(word: "Swift", score: 200, wordList: ["Example", "Code", "Sample"], completedWords: ["Example", "Code", "Sample"], date: Date().addingTimeInterval(-86400)),
-        GameState(word: "Game", score: 150, wordList: ["Play", "Test", "Load"], completedWords: ["Play"], date: Date().addingTimeInterval(-172800))
-    ]
+    //    @State private var gameStates: [GameState] = [
+    //        GameState(word: "Example", score: 120, wordList: ["Swift", "UI", "Framework"], completedWords: ["Swift", "UI"], date: Date()),
+    //        GameState(word: "Swift", score: 200, wordList: ["Example", "Code", "Sample"], completedWords: ["Example", "Code", "Sample"], date: Date().addingTimeInterval(-86400)),
+    //        GameState(word: "Game", score: 150, wordList: ["Play", "Test", "Load"], completedWords: ["Play"], date: Date().addingTimeInterval(-172800))
+    //    ]
+    
+    @Environment(\.modelContext) private var modelContext
+    @Query private var savedGameStates: [GameState]
+    @ObservedObject var gameState: GameState
+    @State private var showAlert = false
+    @State private var selectedGameState: GameState?
     
     var body: some View {
         NavigationView {
             List {
-                ForEach($gameStates, id: \.self) { $gameState in
+                ForEach(savedGameStates, id: \.self) { savedState in
                     VStack(alignment: .leading) {
                         HStack {
-                            Text(gameState.word)
+                            Text(savedState.word)
                                 .font(.headline)
                             Spacer()
-                            Text("\(gameState.completedWords.count)/\(gameState.wordList.count) words")
+                            Text("\(savedState.completedWords.count)/\(savedState.wordList.count) words")
                                 .font(.subheadline)
                             Spacer()
-                            Text("Score: \(gameState.score)")
+                            Text("Score: \(savedState.score)")
                                 .font(.subheadline)
                             Button(action: {
-                                loadGame(gameState)
+                                selectedGameState = savedState
+                                loadGame()
                             }) {
                                 Text("Load")
                                     .font(.subheadline)
@@ -55,16 +63,43 @@ struct SaveLoadView: View {
             .toolbar {
                 EditButton()
             }
+            .alert("Load Game", isPresented: $showAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Load", role: .destructive) {
+                    loadGame()
+                }
+            } message: {
+                Text("This will replace your current game state. Do you want to proceed?")
+            }
         }
     }
     
-    private func loadGame(_ gameState: GameState) {
+    private func loadGame() {
         // Logic to load the game state
-        print("Loading game: \(gameState.word)")
+        guard let selectedState = selectedGameState else { return }
+        print("Loading game: \(selectedState.word)")
+        
+        // Replace the current `gameState` properties with those of the selected state
+        gameState.word = selectedState.word
+        gameState.score = selectedState.score
+        gameState.wordList = selectedState.wordList
+        gameState.completedWords = selectedState.completedWords
+        gameState.date = selectedState.date
+        gameState.resetShuffledWord()
     }
     
     private func deleteGameState(at offsets: IndexSet) {
-        gameStates.remove(atOffsets: offsets)
+        for index in offsets {
+            let gameState = savedGameStates[index] // Get the GameState to delete
+            modelContext.delete(gameState) // Delete from SwiftData context
+        }
+        
+        // Save the context to persist the deletion
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error deleting game state: \(error)")
+        }
     }
     
     private var dateFormatter: DateFormatter {
@@ -76,5 +111,12 @@ struct SaveLoadView: View {
 }
 
 #Preview {
-    SaveLoadView()
+    var previewGameState = GameState(
+        word: "Preview",
+        score: 150,
+        wordList: ["Swift", "UI", "Framework"],
+        completedWords: ["Swift", "UI"],
+        date: Date()
+    )
+    SaveLoadView(gameState: previewGameState)
 }

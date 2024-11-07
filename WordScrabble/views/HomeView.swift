@@ -7,16 +7,24 @@
 
 
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
     
     @ObservedObject var gameState: GameState
+    @Environment(\.modelContext) private var modelContext
+    @Query private var savedGameStates: [GameState]
     
     var body: some View {
         NavigationView {
             ScrabbleView(gameState: gameState)
                 .navigationTitle("Word Scrabble")
                 .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Save Game") {
+                            saveOrUpdateGameState()
+                        }
+                    }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button("New Game") {
                             gameState.startGame()
@@ -30,6 +38,30 @@ struct HomeView: View {
                     }
                 }
         }
+    }
+    
+    private func saveOrUpdateGameState() {
+        // Check if this game state already exists based on unique criteria (e.g., `word`)
+        if let existingState = savedGameStates.first(where: { $0.word == gameState.word }) {
+            // Update existing state
+            existingState.score = gameState.score
+            existingState.wordList = gameState.wordList
+            existingState.completedWords = gameState.completedWords
+            existingState.date = Date()
+        } else {
+            // Insert a new state
+            let newGameState = GameState(
+                word: gameState.word,
+                score: gameState.score,
+                wordList: gameState.wordList,
+                completedWords: gameState.completedWords,
+                date: Date()
+            )
+            modelContext.insert(newGameState)
+        }
+        
+        // Save the context to persist changes
+        try? modelContext.save()
     }
 }
 
