@@ -33,7 +33,7 @@ struct ScoreboardView: View {
                             Text(score.word)
                                 .font(.headline)
                             Spacer()
-                            Text("\(score.wordCount) words")
+                            Text("\(score.wordCount)/\(score.wordListCount) words")
                                 .font(.subheadline)
                             Spacer()
                             Text("Score: \(score.score)")

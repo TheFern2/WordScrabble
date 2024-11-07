@@ -12,10 +12,10 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     //@Query private var items: [Item]
     @StateObject var gameState = GameState(
-            word: "Example",
-            score: 100,
-            wordList: ["Swift", "Code"],
-            completedWords: ["Swift"],
+            word: "",
+            score: 0,
+            wordList: [],
+            completedWords: [],
             date: Date()
         )
     

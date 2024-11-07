@@ -104,6 +104,7 @@ struct ScrabbleView: View {
         }
         .onAppear {
             calculateOverallMaxScore() // Calculate max score on view load// Initial calculation when the view appears
+            calculateAllWords()
         }
         .onSubmit(addNewWord)
         .alert(errorTitle, isPresented: $showingError) {
@@ -126,7 +127,7 @@ struct ScrabbleView: View {
             // Update the existing score if the new score is higher than the saved score for this word
             if newScore > existingScore.score {
                 existingScore.score = newScore
-                existingScore.wordCount = gameState.wordList.count
+                existingScore.wordCount = gameState.completedWords.count
                 existingScore.date = Date()
                 
                 // Persist the updated score for the current word
@@ -136,7 +137,8 @@ struct ScrabbleView: View {
             // Insert a new score entry only if no entry exists and score is larger than 0
             let newScoreEntry = Score(
                 word: gameState.word,
-                wordCount: gameState.wordList.count,
+                wordCount: gameState.completedWords.count,
+                wordListCount: gameState.wordList.count,
                 score: newScore,
                 date: Date()
             )
@@ -150,6 +152,19 @@ struct ScrabbleView: View {
         if newScore > maxScore {
             maxScore = newScore
         }
+    }
+    
+    func calculateAllWords() {
+        Task {
+            gameState.wordList = await calculateWords(from: gameState.word)
+        }
+    }
+    
+    // Calculation function (replacing previous progress-based function)
+    func calculateWords(from rootWord: String) async -> [String] {
+        let validWords = await generateWords(from: rootWord) // Assumes generateWords is async
+//        print("Valid words: \(validWords)")
+        return validWords // Return total valid word count
     }
     
     func addNewWord() {

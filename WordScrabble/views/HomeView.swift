@@ -16,7 +16,6 @@ struct HomeView: View {
         NavigationView {
             ScrabbleView(gameState: gameState)
                 .navigationTitle("Word Scrabble")
-//                .onSubmit(addNewWord)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button("New Game") {
@@ -27,11 +26,8 @@ struct HomeView: View {
                 .onAppear {
                     if !gameState.hasGameStarted {
                         gameState.startGame()
-                        gameState.hasGameStarted = true // Set to true so `startGame` isn’t called again
-//                        isTextFieldFocused = true
+                        gameState.hasGameStarted = true
                     }
-                    //                    startGame()
-                    //                    isTextFieldFocused = true
                 }
         }
     }
