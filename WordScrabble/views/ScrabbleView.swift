@@ -30,6 +30,9 @@ struct ScrabbleView: View {
     @State private var errorMessage = ""
     @State private var showingError = false
     
+    @State private var showConfetti = false
+//    @State private var hasShownConfetti = false
+    
     var body: some View {
         ZStack {
             List {
@@ -101,6 +104,13 @@ struct ScrabbleView: View {
                     }
                 }
             }
+            
+            // Show confetti when `showConfetti` is true
+            if showConfetti {
+                ConfettiView()
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+            }
         }
         .onAppear {
             calculateOverallMaxScore() // Calculate max score on view load// Initial calculation when the view appears
@@ -112,6 +122,8 @@ struct ScrabbleView: View {
         } message: {
             Text(errorMessage)
         }
+        
+        
     }
     
     private func calculateOverallMaxScore() {
@@ -151,6 +163,19 @@ struct ScrabbleView: View {
         // Update overall maxScore in case the new score exceeds it
         if newScore > maxScore {
             maxScore = newScore
+            
+            // Show confetti if it hasn't been shown yet
+            if !gameState.hasShownConfetti {
+                triggerConfetti()
+                gameState.hasShownConfetti = true
+            }
+        }
+    }
+    
+    func triggerConfetti() {
+        showConfetti = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            showConfetti = false
         }
     }
     
@@ -163,7 +188,7 @@ struct ScrabbleView: View {
     // Calculation function (replacing previous progress-based function)
     func calculateWords(from rootWord: String) async -> [String] {
         let validWords = await generateWords(from: rootWord) // Assumes generateWords is async
-//        print("Valid words: \(validWords)")
+        //        print("Valid words: \(validWords)")
         return validWords // Return total valid word count
     }
     

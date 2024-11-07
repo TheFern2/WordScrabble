@@ -10,6 +10,7 @@ class GameState: ObservableObject {
     private var completedWordsData: Data
     var date: Date
     var hasGameStarted = false
+    var hasShownConfetti = false
     
     init(word: String, score: Int, wordList: [String], completedWords: [String], date: Date) {
         self.word = word
@@ -50,7 +51,7 @@ class GameState: ObservableObject {
         // Clear previous state
         completedWords.removeAll()
         score = 0
-        
+        hasShownConfetti = false
         // Load a new word from `start.txt`
         if let startWordsURL = Bundle.main.url(forResource: "start", withExtension: "txt"),
            let startWords = try? String(contentsOf: startWordsURL, encoding: .utf8) {
