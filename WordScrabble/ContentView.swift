@@ -10,7 +10,7 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    //@Query private var items: [Item]
+    @State private var newWord: String = ""
     @StateObject var gameState = GameState(
             word: "",
             score: 0,
@@ -21,7 +21,7 @@ struct ContentView: View {
     
     var body: some View {
         TabView {
-            HomeView(gameState: gameState)
+            HomeView(gameState: gameState, newWord: $newWord)
                 .tabItem {
                     Label("Home", systemImage: "gamecontroller.fill")
                 }
@@ -31,7 +31,7 @@ struct ContentView: View {
                     Label("Scoreboard", systemImage: "list.number")
                 }
             
-            SaveLoadView(gameState: gameState)
+            SaveLoadView(gameState: gameState, newWord: $newWord)
                 .tabItem {
                     Label("Save/Load", systemImage: "square.and.arrow.down")
                 }

@@ -14,15 +14,17 @@ struct HomeView: View {
     @ObservedObject var gameState: GameState
     @Environment(\.modelContext) private var modelContext
     @Query private var savedGameStates: [GameState]
+    @Binding var newWord: String
     
     var body: some View {
         NavigationView {
-            ScrabbleView(gameState: gameState)
+            ScrabbleView(gameState: gameState, newWord: $newWord)
                 .navigationTitle("Word Scrabble")
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button("New Game") {
                             gameState.startGame()
+                            newWord = ""
                         }
                     }
                 }
@@ -64,12 +66,13 @@ struct HomeView: View {
 }
 
 #Preview {
-    var previewGameState = GameState(
+    @Previewable @State var newWord = ""
+    let previewGameState = GameState(
         word: "Preview",
         score: 150,
         wordList: ["Swift", "UI", "Framework"],
         completedWords: ["Swift", "UI"],
         date: Date()
     )
-    HomeView(gameState: previewGameState)
+    HomeView(gameState: previewGameState, newWord: $newWord)
 }

@@ -27,6 +27,7 @@ struct SaveLoadView: View {
     @ObservedObject var gameState: GameState
     @State private var showAlert = false
     @State private var selectedGameState: GameState?
+    @Binding var newWord: String
     
     var body: some View {
         NavigationView {
@@ -86,7 +87,11 @@ struct SaveLoadView: View {
         gameState.wordList = selectedState.wordList
         gameState.completedWords = selectedState.completedWords
         gameState.date = selectedState.date
+        gameState.hasShownConfetti = false
         gameState.resetShuffledWord()
+        
+        // Clear the TextField input
+        newWord = ""
     }
     
     private func deleteGameState(at offsets: IndexSet) {
@@ -112,12 +117,13 @@ struct SaveLoadView: View {
 }
 
 #Preview {
-    var previewGameState = GameState(
+    @Previewable @State var newWord = ""
+    let previewGameState = GameState(
         word: "Preview",
         score: 150,
         wordList: ["Swift", "UI", "Framework"],
         completedWords: ["Swift", "UI"],
         date: Date()
     )
-    SaveLoadView(gameState: previewGameState)
+    SaveLoadView(gameState: previewGameState, newWord: $newWord)
 }

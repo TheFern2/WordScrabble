@@ -18,7 +18,7 @@ struct ScrabbleView: View {
     
     @ObservedObject var gameState: GameState
     @FocusState private var isTextFieldFocused: Bool
-    @State private var newWord = ""
+    @Binding var newWord: String
     @State private var hasGameStarted = false
     @State private var wordProgress: Double = 0.0 // TODO extract progress stuff to a separate view
     @Query private var scores: [Score] // Fetch all Score instances from ScoreboardView
@@ -278,12 +278,9 @@ struct ScrabbleView: View {
     }
 }
 
-//#Preview {
-//    ScrabbleView()
-//}
-
 #Preview {
-    var previewGameState = GameState(
+    @Previewable @State var newWord = ""
+    let previewGameState = GameState(
         word: "Preview",
         score: 150,
         wordList: ["Swift", "UI", "Framework"],
@@ -291,5 +288,5 @@ struct ScrabbleView: View {
         date: Date()
     )
     
-    ScrabbleView(gameState: previewGameState)
+    ScrabbleView(gameState: previewGameState, newWord: $newWord)
 }
