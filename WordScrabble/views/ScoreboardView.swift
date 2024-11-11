@@ -27,7 +27,8 @@ struct ScoreboardView: View {
     var body: some View {
         NavigationView {
             List {
-                ForEach(scores, id: \.self) { score in
+//                ForEach(scores, id: \.self) { score in
+                ForEach(scores.sorted(by: { $0.score > $1.score })) { score in
                     VStack(alignment: .leading) {
                         HStack {
                             Text(score.word)

@@ -41,6 +41,9 @@ struct HomeView: View {
     }
     
     private func saveOrUpdateGameState() {
+        // Only save if the score is greater than zero
+        guard gameState.score > 0 else { return }
+        
         // Check if this game state already exists based on unique criteria (e.g., `word`)
         if let existingState = savedGameStates.first(where: { $0.word == gameState.word }) {
             // Update existing state

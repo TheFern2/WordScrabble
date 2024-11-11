@@ -86,7 +86,7 @@ struct SaveLoadView: View {
         gameState.score = selectedState.score
         gameState.wordList = selectedState.wordList
         gameState.completedWords = selectedState.completedWords
-        gameState.date = selectedState.date
+        // gameState.date = selectedState.date
         gameState.hasShownConfetti = false
         gameState.resetShuffledWord()
         
